@@ -2,29 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Advanced Quiz App</title>
+  <title>Final Boss Quiz</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="quiz-container">
-  <h1>🚀 Advanced Quiz</h1>
+<div class="container">
+
+  <div class="top-controls">
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+
+    <button id="themeToggle">🌙</button>
+  </div>
+
+  <h1>🔥 Quiz Master</h1>
 
   <div class="progress-bar">
     <div id="progress"></div>
   </div>
 
-  <div class="top-bar">
-    <span id="timer">10</span>s
-    <span id="score">Score: 0</span>
+  <div class="stats">
+    ⏱ <span id="timer">10</span>s |
+    🎯 <span id="score">0</span>
   </div>
 
-  <div id="question">Loading...</div>
-  <div id="answers" class="answers"></div>
+  <div id="question"></div>
+  <div id="answers"></div>
 
   <button id="nextBtn">Next</button>
 
   <div id="result" class="hidden"></div>
+
+  <h3>🏆 Leaderboard</h3>
+  <ul id="leaderboard"></ul>
+
 </div>
 
 <script src="script.js"></script>
