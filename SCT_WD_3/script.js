@@ -1,53 +1,66 @@
-let questions = [
+const baseQuestions = [
   {
-    question: "What does CSS stand for?",
+    question: "HTML stands for?",
     answers: [
-      { text: "Cascading Style Sheets", correct: true },
-      { text: "Computer Style Sheet", correct: false },
-      { text: "Creative Style System", correct: false },
-      { text: "Colorful Style Sheet", correct: false }
+      { text: "Hyper Text Markup Language", correct: true },
+      { text: "High Tech Machine", correct: false }
     ]
   },
   {
-    question: "Which is not a JS framework?",
+    question: "CSS is used for?",
     answers: [
-      { text: "React", correct: false },
-      { text: "Angular", correct: false },
-      { text: "Laravel", correct: true },
-      { text: "Vue", correct: false }
+      { text: "Styling", correct: true },
+      { text: "Database", correct: false }
     ]
   },
   {
-    question: "Which tag is used for JS?",
+    question: "JavaScript is?",
     answers: [
-      { text: "<script>", correct: true },
-      { text: "<js>", correct: false },
-      { text: "<code>", correct: false },
-      { text: "<javascript>", correct: false }
+      { text: "Programming Language", correct: true },
+      { text: "Operating System", correct: false }
     ]
   }
 ];
 
-// Shuffle questions
-questions = questions.sort(() => Math.random() - 0.5);
-
+let questions = [];
 let index = 0;
 let score = 0;
-let timeLeft = 10;
 let timer;
+let timeLeft;
 
 const qEl = document.getElementById("question");
 const aEl = document.getElementById("answers");
 const nextBtn = document.getElementById("nextBtn");
-const resultEl = document.getElementById("result");
 const timerEl = document.getElementById("timer");
 const scoreEl = document.getElementById("score");
 const progressEl = document.getElementById("progress");
+const resultEl = document.getElementById("result");
+const leaderboardEl = document.getElementById("leaderboard");
+const difficultyEl = document.getElementById("difficulty");
+const themeToggle = document.getElementById("themeToggle");
+
+const settings = {
+  easy: 15,
+  medium: 10,
+  hard: 5
+};
+
+// Shuffle questions
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+// Start quiz
+function startQuiz() {
+  questions = shuffle([...baseQuestions]);
+  index = 0;
+  score = 0;
+  loadQuestion();
+}
 
 // Load question
 function loadQuestion() {
   reset();
-  startTimer();
 
   let q = questions[index];
   qEl.textContent = q.question;
@@ -59,53 +72,46 @@ function loadQuestion() {
     aEl.appendChild(btn);
   });
 
-  progressEl.style.width = ((index / questions.length) * 100) + "%";
+  progressEl.style.width = (index / questions.length) * 100 + "%";
+  startTimer();
 }
 
 // Timer
 function startTimer() {
-  timeLeft = 10;
+  timeLeft = settings[difficultyEl.value];
   timerEl.textContent = timeLeft;
 
   timer = setInterval(() => {
     timeLeft--;
     timerEl.textContent = timeLeft;
 
-    if (timeLeft === 0) {
-      clearInterval(timer);
-      autoNext();
-    }
+    if (timeLeft <= 0) nextBtn.click();
   }, 1000);
 }
 
-// Reset state
+// Reset
 function reset() {
   clearInterval(timer);
-  nextBtn.style.display = "none";
   aEl.innerHTML = "";
+  nextBtn.style.display = "none";
 }
 
 // Select answer
 function selectAnswer(btn, correct) {
   clearInterval(timer);
 
-  let buttons = aEl.children;
-  for (let b of buttons) b.disabled = true;
-
   if (correct) {
     btn.classList.add("correct");
     score++;
-    scoreEl.textContent = "Score: " + score;
   } else {
     btn.classList.add("wrong");
   }
 
-  nextBtn.style.display = "block";
-}
+  scoreEl.textContent = score;
 
-// Auto next
-function autoNext() {
-  nextBtn.click();
+  [...aEl.children].forEach(b => b.disabled = true);
+
+  nextBtn.style.display = "block";
 }
 
 // Next
@@ -119,7 +125,7 @@ nextBtn.onclick = () => {
   }
 };
 
-// Result
+// Show result + leaderboard
 function showResult() {
   clearInterval(timer);
 
@@ -127,18 +133,36 @@ function showResult() {
   aEl.style.display = "none";
   nextBtn.style.display = "none";
 
-  let best = localStorage.getItem("bestScore") || 0;
-  if (score > best) {
-    localStorage.setItem("bestScore", score);
-    best = score;
-  }
+  let percent = Math.round((score / questions.length) * 100);
+
+  // Save leaderboard
+  let scores = JSON.parse(localStorage.getItem("scores")) || [];
+  scores.push(percent);
+  scores.sort((a, b) => b - a);
+  scores = scores.slice(0, 5);
+  localStorage.setItem("scores", JSON.stringify(scores));
 
   resultEl.classList.remove("hidden");
   resultEl.innerHTML = `
     <h2>Score: ${score}/${questions.length}</h2>
-    <h3>Best: ${best}</h3>
+    <h3>${percent}%</h3>
     <button onclick="location.reload()">Play Again</button>
   `;
+
+  showLeaderboard();
 }
 
-loadQuestion();
+// Show leaderboard
+function showLeaderboard() {
+  let scores = JSON.parse(localStorage.getItem("scores")) || [];
+  leaderboardEl.innerHTML = scores.map(s => `<li>${s}%</li>`).join("");
+}
+
+// Theme toggle
+themeToggle.onclick = () => {
+  document.body.classList.toggle("light");
+};
+
+// Start
+startQuiz();
+showLeaderboard();
